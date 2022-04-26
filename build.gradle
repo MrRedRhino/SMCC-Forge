@@ -1,0 +1,149 @@
+buildscript {
+    repositories {
+        // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+
+group = 'org.pipeman'
+version = '1.0'
+
+java {
+    archivesBaseName = 'smcc'
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.18.1'
+
+    runs {
+        client {
+            // Fix the classpath the right way and once and for all
+            afterEvaluate {
+                // Collect deps in runtimeClasspath but NOT in minecraft
+                def deps = (configurations.runtimeClasspath - configurations.minecraft).join(';')
+                // Add deps to classpath
+                minecraft.runs.each { run ->
+                    run.token 'minecraft_classpath', deps
+                }
+            }
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            property 'forge.enabledGameTestNamespaces', 'smcc'
+
+            mods {
+                smcc {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            property 'forge.enabledGameTestNamespaces', 'smcc'
+
+            mods {
+                smcc {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        gameTestServer {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', 'smcc'
+
+            mods {
+                smcc {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'smcc', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                smcc {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, "smcc.refmap.json"
+
+    config "smcc.mixins.json"
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+configurations {
+    shade
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.18.1-39.1.2'
+    implementation 'org.jasypt:jasypt:1.9.3'
+    shadow 'org.jasypt:jasypt:1.9.3'
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+shadowJar {
+    configurations = [project.configurations.shade]
+    classifier ''
+    relocate 'org.jasypt.jasypt', "org.jasypt.jasypt"
+}
+
+reobf {
+    shadowJar { }
+}
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title"     : "smcc",
+                //"Specification-Vendor": "smcc authors",
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion,
+                //"Implementation-Vendor": "smcc authors",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+//jar.finalizedBy('reobfJar')
+tasks.build.dependsOn reobfShadowJar
+jar.finalizedBy('reobfShadowJar')

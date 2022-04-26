@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.pipeman.smcc.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "smcc.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "ChatComponentMixin",
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
