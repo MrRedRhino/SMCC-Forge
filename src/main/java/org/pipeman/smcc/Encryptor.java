@@ -7,12 +7,11 @@ import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.jasypt.util.text.StrongTextEncryptor;
 
 public class Encryptor {
-    private final StrongTextEncryptor encryptor;
-    private String pwd;
+    private StrongTextEncryptor encryptor;
 
     public Encryptor(String pwd) {
         encryptor = new StrongTextEncryptor();
-        pwd(pwd);
+        setPwd(pwd);
 
     }
 
@@ -24,9 +23,9 @@ public class Encryptor {
         return encryptor.decrypt(encryptedText);
     }
 
-    public void pwd(String newPwd) {
+    public void setPwd(String newPwd) {
+        encryptor = new StrongTextEncryptor();
         encryptor.setPassword(newPwd);
-        pwd = newPwd;
     }
 
     public TranslatableComponent processMessage(TranslatableComponent msg) {
@@ -41,11 +40,11 @@ public class Encryptor {
 
             try {
                 Object[] args = msg.getArgs();
-                String decryptedMsg;
+                String decryptedMsg = "Decr: ";
                 if (args[isTeamMsg ? 2 : 1] instanceof String s) {
-                    decryptedMsg = SMCC.encryptor.decrypt(s);
+                    decryptedMsg += SMCC.encryptor.decrypt(s);
                 } else {
-                    decryptedMsg = SMCC.encryptor.decrypt(((TextComponent) args[isTeamMsg ? 2 : 1]).getText());
+                    decryptedMsg += SMCC.encryptor.decrypt(((TextComponent) args[isTeamMsg ? 2 : 1]).getText());
                 }
 
                 Object[] newArgs;
@@ -61,9 +60,5 @@ public class Encryptor {
             } catch (EncryptionOperationNotPossibleException | EncryptionInitializationException ignored) {}
         }
         return msg;
-    }
-
-    public String pwd() {
-        return pwd;
     }
 }

@@ -1,24 +1,13 @@
 package org.pipeman.smcc.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.GuiMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ChatComponent;
-import net.minecraft.client.gui.components.ComponentRenderUtils;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.*;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Mth;
-import org.pipeman.smcc.IGetMessages;
 import org.pipeman.smcc.SMCC;
-import org.pipeman.smcc.mixin.ChatComponentMixin;
 import org.pipeman.smcc.options.Options;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import static org.pipeman.smcc.SMCC.MC;
 
@@ -90,6 +79,8 @@ public class SmccSettingsScreen extends Screen {
     public void onClose() {
         super.onClose();
         Options.key = passwordInput.getValue();
+        SMCC.encryptor.setPwd(Options.key);
+        Options.storeConfigFile();
 //        List<GuiMessage<Component>> messages = ((IGetMessages) MC.gui.getChat()).getMessages();
 //        List<Component> newMessages = new ArrayList<>();
 //

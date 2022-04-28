@@ -5,9 +5,10 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "smcc.refmap.json",
   "mixins": [
+    "ChatPacketMixin"
   ],
   "client": [
-    "ChatComponentMixin",
+    "ChatComponentMixin"
   ],
   "injectors": {
     "defaultRequire": 1
